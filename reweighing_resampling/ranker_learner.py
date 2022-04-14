@@ -25,9 +25,11 @@ if __name__ == '__main__':
     x_origin = np.load('../data/census/data-x.npy')
     y_origin = np.load('../data/census/data-y.npy')
     ranker_array = np.ndarray((x_origin.shape[0], 2), dtype=np.float32)
+    print('start predict')
     for i in range(x_origin.shape[0]):
         label_tmp = model_argmax(sess, x, preds, np.array([x_origin[i]]))
         ranker_score = model_probab(sess, x, preds, np.array([x_origin[i]]))
         ranker_array[i] = ranker_score
     np.save('ranker_result_origin/2dims_result.npy', ranker_array)
+    print('end')
 
