@@ -1,6 +1,6 @@
 import sys
 sys.path.append("../")
-import numpy as np
+
 import common_utils as cu
 from load_model.util_functions import *
 
