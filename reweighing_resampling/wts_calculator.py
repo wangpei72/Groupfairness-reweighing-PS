@@ -4,6 +4,8 @@ import numpy as np
 import common_utils as cu
 
 
+
+
 if __name__ == '__main__':
     # 先获取原始数据
     x_origin = np.load('../data/census/data-x.npy')
