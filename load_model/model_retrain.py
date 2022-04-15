@@ -18,8 +18,8 @@ def training(dataset, model_path, nb_epochs, batch_size,learning_rate):
     """
 
     # prepare the data and model
-    X=np.load("../data/census/data-x.npy")
-    Y=np.load("../data/census/data-y.npy")
+    X=np.load("../data/census-gen/x_generated.npy")
+    Y=np.load("../data/census-gen/y_generated.npy")
     input_shape=(None,13)
     nb_classes = 2
 
