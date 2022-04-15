@@ -37,6 +37,41 @@ def get_conditionings_from_npy(x, y):
     return cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav
 
 
+def gen_all_sets(ranker_file, x, y):
+    x_origin = np.load(x)
+    y_origin = np.load(y)
+    ranker_origin = np.load(ranker_file)
+    x_up_fav, x_p_fav, x_up_unfav, x_p_unfav = \
+        get_x_index_slices(x, y)
+    DP_up_fav_asc, FP_p_fav_asc, DN_up_unfav_desc, FN_p_unfav_desc = \
+        get_sorted_rankers(ranker_file, x, y)
+    # DP FP DN FN
+    wght_up_fav, wght_p_fav, wght_up_unfav, wght_p_unfav = get_weights_tuple(x_origin, y_origin)
+    DP_set, DP_label = gen_DP_set(DP_up_fav_asc, x_up_fav, x_origin, y_origin, wght_up_fav)
+    FP_set, FP_label = gen_FP_set(FP_p_fav_asc, x_p_fav, x_origin, y_origin, wght_p_fav)
+    DN_set, DN_label = gen_DN_set(DN_up_unfav_desc, x_up_unfav, x_origin, y_origin, wght_up_unfav)
+    FN_set, FN_label = gen_FN_set(FN_p_unfav_desc, x_p_unfav, x_origin, y_origin, wght_p_unfav)
+
+    final_gen_set = np.concatenate((DP_set, FP_set, DN_set, FN_set), axis=0)
+    final_gen_label = np.concatenate((DP_label, FP_label, DN_label, FN_label), axis=0)
+
+    # 32561 -> 31380
+    np.save('result_dataset/x_generated.npy', final_gen_set)
+    np.save('result_dataset/y_generated.npy', final_gen_label)
+    return final_gen_set, final_gen_label
+
+
+def get_x_index_slices(x, y):
+    cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav = \
+        get_conditionings_from_npy(x, y)
+    x_p_fav = np.argwhere(cond_p_fav)
+    x_p_unfav = np.argwhere(cond_p_unfav)
+    x_up_fav = np.argwhere(cond_up_fav)
+    x_up_unfav = np.argwhere(cond_up_unfav)
+
+    return x_up_fav, x_p_fav, x_up_unfav, x_p_unfav
+
+
 def get_sorted_rankers(ranker_origin_npy, x, y):
     x_origin = np.load(x)
     y_origin = np.load(y)
@@ -81,7 +116,6 @@ def get_sorted_rankers(ranker_origin_npy, x, y):
     #         l.insert(j + 1, l.pop(i))
     #
     #     return l
-
     DP_up_fav_asc = sort_positive_ascend(x_up_fav, ranker_origin)
     FP_p_fav_asc = sort_positive_ascend(x_p_fav, ranker_origin)
     DN_up_unfav_desc = sort_negative_descend(x_up_unfav, ranker_origin)
@@ -142,6 +176,32 @@ def sort_negative_descend(x_upri_or_pri, ranker_origin):
     return N_upri_or_pri_ranker
 
 
+def get_weights_tuple(x_origin, y_origin):
+    shape_x = x_origin.shape
+    shape_y = y_origin.shape
+    protected_attribute_names = ['sex']
+    protected_attributes = x_origin[:, 8]
+    protected_attributes = protected_attributes[:, np.newaxis]
+    labels = y_origin[:, 1]
+    labels = labels[:, np.newaxis]
+
+    instance_weights = np.ones((shape_x[0],), dtype=np.float64)
+    (priv_cond, unpriv_cond, fav_cond, unfav_cond,
+     cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav) = \
+        cu._obtain_conditionings(condition_dict_priv=[{'sex': 1}],
+                                 condition_dict_unpriv=[{'sex': 0}],
+                                 protected_attributes=protected_attributes,
+                                 protected_attribute_names=protected_attribute_names,
+                                 labels=labels,
+                                 favorable_label=1.0,
+                                 unfavorable_label=0.0)
+    weights_dict = cu.fit(instance_weights,
+                          priv_cond, unpriv_cond, fav_cond, unfav_cond,
+                          cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav
+                          )
+    # DP FP DN FN
+    return weights_dict['WUPF'], weights_dict['WPF'], weights_dict['WUPUF'], weights_dict['WPUF']
+
 # 8： 将2份DP（劣势正样本）的复制增加到D_ps，
 # 9：增加（2.19 - 2*|DP|）的向下取整结果 个lowest-排序的（从bottom往top取）元素的DP（劣正）到D_ps
 # 10: 增加 （0.85*|DN|）的向下取整结果 个lowest-ranked 元素的DN（劣负）到D_ps(==换言之删除掉最靠近boundary（负样本概率较大的那边)的0.15%|DN|==）
@@ -161,15 +221,15 @@ def gen_DP_set(DP_up_fav_asc, x_up_fav, x_origin, y_origin, wght_up_fav):
     cell_y = y_origin[x_up_fav[:, 0], :]
     DP_set = cell_x
     DP_label = cell_y
-    if wght_floor > 2:
+    if wght_floor >= 2:
         for i in range(wght_floor - 1):
             DP_set = np.concatenate((DP_set, cell_x), axis=0)
             DP_label = np.concatenate((DP_label, cell_y), axis=0)
     tmp = 0
-    for j in range(remainder_num):
+    for j in range(int(remainder_num)):
         #         找排在最前面的 循环置底
-        DP_set = np.concatenate((DP_set, x_origin[DP_up_fav_asc[tmp]]), axis=0)
-        DP_label = np.concatenate((DP_label, y_origin[DP_up_fav_asc[tmp]]), axis=0)
+        DP_set = np.concatenate((DP_set, x_origin[DP_up_fav_asc[tmp], np.newaxis]), axis=0)
+        DP_label = np.concatenate((DP_label, y_origin[DP_up_fav_asc[tmp], np.newaxis]), axis=0)
         tmp += 1
     return DP_set, DP_label
 
@@ -189,32 +249,32 @@ def gen_FN_set(FN_p_unfav_desc, x_p_unfav, x_origin, y_origin, wght_p_unfav):
             FN_set = np.concatenate((FN_set, cell_x), axis=0)
             FN_label = np.concatenate((FN_label, cell_y), axis=0)
     tmp = 0
-    for j in range(remainder_num):
+    for j in range(int(remainder_num)):
         #         找排在最前面的 循环置底
-        FN_set = np.concatenate((FN_set, x_origin[FN_p_unfav_desc[tmp]]), axis=0)
-        FN_label = np.concatenate((FN_label, y_origin[FN_p_unfav_desc[tmp]]), axis=0)
+        FN_set = np.concatenate((FN_set, x_origin[FN_p_unfav_desc[tmp], np.newaxis]), axis=0)
+        FN_label = np.concatenate((FN_label, y_origin[FN_p_unfav_desc[tmp], np.newaxis]), axis=0)
         tmp += 1
     return FN_set, FN_label
 
 
 def gen_DN_set(DN_up_unfav_desc, x_up_unfav, x_origin, y_origin, wght_up_unfav):
     global DN_set, DN_label
-    wght_floor = math.floor(wght_up_unfav) # 0 0.85
+    wght_floor = math.floor(wght_up_unfav)  # 0 0.85
     wght_remainder = wght_up_unfav - wght_floor
     # instance_weights = np.ones((x_origin.shape[0],), dtype=np.float64)
     DN_num = x_up_unfav.shape[0]
     remainder_num = np.floor(DN_num * wght_remainder)
-    tmp = DN_num-1
+    tmp = DN_num - 1
 
-    for j in range(remainder_num):
+    for j in range(int(remainder_num)):
         #         找排在最前面的 循环置底
         if j == 0:
-            DN_set = x_origin[DN_up_unfav_desc[tmp]]
-            DN_label = y_origin[DN_up_unfav_desc[tmp]]
+            DN_set = x_origin[DN_up_unfav_desc[tmp], np.newaxis]
+            DN_label = y_origin[DN_up_unfav_desc[tmp], np.newaxis]
             tmp -= 1
         else:
-            DN_set = np.concatenate((DN_set, x_origin[DN_up_unfav_desc[tmp]]), axis=0)
-            DN_label = np.concatenate((DN_label, y_origin[DN_up_unfav_desc[tmp]]), axis=0)
+            DN_set = np.concatenate((DN_set, x_origin[DN_up_unfav_desc[tmp], np.newaxis]), axis=0)
+            DN_label = np.concatenate((DN_label, y_origin[DN_up_unfav_desc[tmp], np.newaxis]), axis=0)
             tmp -= 1
     return DN_set, DN_label
 
@@ -228,15 +288,15 @@ def gen_FP_set(FP_p_fav_asc, x_p_fav, x_origin, y_origin, wght_p_fav):
     remainder_num = np.floor(FP_num * wght_remainder)
     tmp = FP_num - 1
 
-    for j in range(remainder_num):
+    for j in range(int(remainder_num)):
         #         找排在最前面的 循环置底
         if j == 0:
-            FP_set = x_origin[FP_p_fav_asc[tmp]]
-            FP_label = y_origin[FP_p_fav_asc[tmp]]
+            FP_set = x_origin[FP_p_fav_asc[tmp], np.newaxis]
+            FP_label = y_origin[FP_p_fav_asc[tmp], np.newaxis]
             tmp -= 1
         else:
-            FP_set = np.concatenate((FP_set, x_origin[FP_p_fav_asc[tmp]]), axis=0)
-            FP_label = np.concatenate((FP_label, y_origin[FP_p_fav_asc[tmp]]), axis=0)
+            FP_set = np.concatenate((FP_set, x_origin[FP_p_fav_asc[tmp], np.newaxis]), axis=0)
+            FP_label = np.concatenate((FP_label, y_origin[FP_p_fav_asc[tmp], np.newaxis]), axis=0)
             tmp -= 1
     return FP_set, FP_label
 
@@ -245,8 +305,10 @@ if __name__ == '__main__':
     # prob_origin = np.load('ranker_result_origin/2dims_result.npy')
     # x_origin = np.load('../data/census/data-x.npy')
     # y_origin = np.load('../data/census/data-y.npy')
-    get_sorted_rankers('ranker_result_origin/2dims_result.npy',
+    # get_sorted_rankers('ranker_result_origin/2dims_result.npy',
+    #                    '../data/census/data-x.npy',
+    #                    '../data/census/data-y.npy')
+    gen_all_sets('ranker_result_origin/2dims_result.npy',
                        '../data/census/data-x.npy',
                        '../data/census/data-y.npy')
-
     print('end')
