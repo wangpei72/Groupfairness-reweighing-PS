@@ -15,15 +15,15 @@ y = tf.placeholder(tf.float32, shape=(None, nb_classes))
 model = dnn(input_shape, nb_classes)
 preds = model(x)
 saver = tf.train.Saver()
-model_path = '../my-model/census/999/' + 'test.model'
+model_path = '../my-model/adult/999/' + 'test.model'
 saver.restore(sess, model_path)
 
 # construct the gradient graph
 grad_0 = gradient_graph(x, preds)
 # predict
 if __name__ == '__main__':
-    x_origin = np.load('../data/census/data-x.npy')
-    y_origin = np.load('../data/census/data-y.npy')
+    x_origin = np.load('../data/adult/data-x.npy')
+    y_origin = np.load('../data/adult/data-y.npy')
     ranker_array = np.ndarray((x_origin.shape[0], 2), dtype=np.float32)
     print('start predict')
     for i in range(x_origin.shape[0]):

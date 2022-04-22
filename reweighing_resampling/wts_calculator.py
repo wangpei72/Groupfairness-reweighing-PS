@@ -8,8 +8,8 @@ import common_utils as cu
 
 if __name__ == '__main__':
     # 先获取原始数据
-    x_origin = np.load('../data/census/data-x.npy')
-    y_origin = np.load('../data/census/data-y.npy')
+    x_origin = np.load('../data/adult/data-x.npy')
+    y_origin = np.load('../data/adult/data-y.npy')
 
     # 优势劣势群体、敏感属性的定义
 #     包含在fit和transfrom中

@@ -33,7 +33,7 @@ def training(dataset, model_path, nb_epochs, batch_size,learning_rate):
     preds = model(x)
     saver = tf.train.Saver()
     #原先的模型路径(即使用原始数据集训练的模型)
-    modelpath = "../my-model/census/999/test.model"
+    modelpath = "../my-model/adult/999/test.model"
 
     saver.restore(sess, modelpath)
 
@@ -65,7 +65,7 @@ def main(argv=None):
              learning_rate=FLAGS.learning_rate)
 
 if __name__ == '__main__':
-    flags.DEFINE_string("dataset", "census", "the name of dataset")
+    flags.DEFINE_string("dataset", "adult", "the name of dataset")
     flags.DEFINE_string("model_path", "../re-model/", "the name of path for saving model")
     flags.DEFINE_integer('nb_epochs', 100, 'Number of epochs to train model')
     flags.DEFINE_integer('batch_size', 128, 'Size of training batches')

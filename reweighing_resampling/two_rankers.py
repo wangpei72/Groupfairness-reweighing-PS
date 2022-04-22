@@ -303,12 +303,12 @@ def gen_FP_set(FP_p_fav_asc, x_p_fav, x_origin, y_origin, wght_p_fav):
 
 if __name__ == '__main__':
     # prob_origin = np.load('ranker_result_origin/2dims_result.npy')
-    # x_origin = np.load('../data/census/data-x.npy')
-    # y_origin = np.load('../data/census/data-y.npy')
+    # x_origin = np.load('../data/adult/data-x.npy')
+    # y_origin = np.load('../data/adult/data-y.npy')
     # get_sorted_rankers('ranker_result_origin/2dims_result.npy',
-    #                    '../data/census/data-x.npy',
-    #                    '../data/census/data-y.npy')
+    #                    '../data/adult/data-x.npy',
+    #                    '../data/adult/data-y.npy')
     gen_all_sets('ranker_result_origin/2dims_result.npy',
-                       '../data/census/data-x.npy',
-                       '../data/census/data-y.npy')
+                       '../data/adult/data-x.npy',
+                       '../data/adult/data-y.npy')
     print('end')
