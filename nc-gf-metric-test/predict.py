@@ -17,8 +17,8 @@ y = tf.placeholder(tf.float32, shape=(None, nb_classes))
 model = dnn(input_shape, nb_classes)
 preds = model(x)
 saver = tf.train.Saver()
-model_path = '../my-model/adult/999/' + 'test.model'
-# model_path = '../start-all-over-model/adult/999/' + 'test.model'
+# model_path = '../mod/adult/my-model/census/999/' + 'test.model'
+model_path = '../mod/adult/start-all-over-model/adult/999/' + 'test.model'
 saver.restore(sess, model_path)
 
 # construct the gradient graph
@@ -75,9 +75,11 @@ if __name__ == '__main__':
         test_accuracy.append(accuracy)
         print('test accuracy i %f' % accuracy)
         print('sample nums is %d' % sample_id)
-        print('group fairness of predicted test set by old model is:')
+        print('group fairness of predicted test set by new model is:')
         print('SPD : %f' % spd)
         print('DI : %f' % di)
         print('EOOP : %f' % eoop)
         print('EOOD : %f' % eood)
+        array_to_save = np.array([sample_id, accuracy, spd, di, eoop, eood])
+        np.save('./accu_gf_metrics/new_model.npy', array_to_save)
 
