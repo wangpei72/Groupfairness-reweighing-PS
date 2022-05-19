@@ -15,9 +15,12 @@ FLAGS = flags.FLAGS
 # data_path_list = ['../data/npy_data_from_aif360/adult-aif360preproc/',
 #                   '../data/npy_data_from_aif360/compas-aif360preproc/',
 #                   '../data/npy_data_from_aif360/german-aif360preproc/']
-data_set_list = ['bank']
-data_shape_list = [(None, 28)]
-data_path_list = ['../data/npy_data_from_aif360/bank-aif360preproc/']
+# data_set_list = ['bank']
+# data_shape_list = [(None, 28)]
+# data_path_list = ['../data/npy_data_from_aif360/bank-aif360preproc/']
+data_set_list = ['default']
+data_shape_list = [(None, 26)]
+data_path_list = ['../data/npy_data_from_aif360/default-aif360preproc/']
 def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
              dataset_path='../data/npy_data_from_aif360/adult-aif360preproc/',
              input_shape=(None, 18),
