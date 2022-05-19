@@ -10,18 +10,21 @@ from tutorial_models import dnn
 
 FLAGS = flags.FLAGS
 
-def training(dataset, model_path, nb_epochs, batch_size,learning_rate):
-    """
-    Train the model
-    :param dataset: the name of testing dataset
-    :param model_path: the path to save trained model
-    """
-
+data_set_list = ['adult', 'compas', 'german']
+data_shape_list = [(None, 18), (None, 10), (None, 11)]
+data_path_list = ['../data/npy_data_from_aif360/adult-aif360preproc/',
+                  '../data/npy_data_from_aif360/compas-aif360preproc/',
+                  '../data/npy_data_from_aif360/german-aif360preproc/']
+def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
+             dataset_path='../data/npy_data_from_aif360/adult-aif360preproc/',
+             input_shape=(None, 18),
+             nb_classes=2
+             ):
     # prepare the data and model
-    X=np.load("../data/census-gen/x_generated.npy")
-    Y=np.load("../data/census-gen/y_generated.npy")
-    input_shape=(None,13)
-    nb_classes = 2
+    X = np.load(dataset_path + "features-train.npy")
+    Y = np.load(dataset_path + "2d-labels-train.npy")
+    input_shape = input_shape
+    nb_classes = nb_classes
 
     tf.set_random_seed(1234)
     config = tf.ConfigProto()
@@ -52,16 +55,22 @@ def training(dataset, model_path, nb_epochs, batch_size,learning_rate):
     accuracy = model_eval(sess, x, y, preds, X, Y, args=eval_params)
     print('Test accuracy on legitimate test examples: {0}'.format(accuracy))
 
+
 def main(argv=None):
-    training(dataset = FLAGS.dataset,
-             model_path = FLAGS.model_path,
-             nb_epochs=FLAGS.nb_epochs,
-             batch_size=FLAGS.batch_size,
-             learning_rate=FLAGS.learning_rate)
+    for i in range(len(data_set_list)):
+        training(dataset = data_set_list[i],
+                model_path = FLAGS.model_path,
+                nb_epochs=FLAGS.nb_epochs,
+                batch_size=FLAGS.batch_size,
+                learning_rate=FLAGS.learning_rate,
+                dataset_path= data_path_list[i],
+                input_shape= data_shape_list[i]
+                 )
+    print('3 original models trained with data from aif360 done.')
 
 if __name__ == '__main__':
-    flags.DEFINE_string("dataset", "adult", "the name of dataset")
-    flags.DEFINE_string("model_path", "../start-all-over-model/", "the name of path for saving model")
+    # flags.DEFINE_string("dataset", "adult", "the name of dataset")
+    flags.DEFINE_string("model_path", "../model_from_aif360data/", "the name of path for saving model")
     flags.DEFINE_integer('nb_epochs', 1000, 'Number of epochs to train model')
     flags.DEFINE_integer('batch_size', 128, 'Size of training batches')
     flags.DEFINE_float('learning_rate', 0.01, 'Learning rate for training')
