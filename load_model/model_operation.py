@@ -24,9 +24,12 @@ FLAGS = flags.FLAGS
 # data_set_list = ['heart']
 # data_shape_list = [(None, 13)]
 # data_path_list = ['../data/npy_data_from_aif360/heart-aif360preproc/']
-data_set_list = ['student']
-data_shape_list = [(None, 32)]
-data_path_list = ['../data/npy_data_from_aif360/student-aif360preproc/']
+# data_set_list = ['student']
+# data_shape_list = [(None, 32)]
+# data_path_list = ['../data/npy_data_from_aif360/student-aif360preproc/']
+data_set_list = ['meps']
+data_shape_list = [(None, 138)]
+data_path_list = ['../data/npy_data_from_aif360/meps-aif360preproc/']
 def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
              dataset_path='../data/npy_data_from_aif360/adult-aif360preproc/',
              input_shape=(None, 18),
@@ -86,7 +89,7 @@ def main(argv=None):
                 dataset_path= data_path_list[i],
                 input_shape= data_shape_list[i]
                  )
-    print('student\'s original models trained with dataset student from aif360 done.')
+    print('meps\'s original models trained with dataset meps from aif360 done.')
 
 if __name__ == '__main__':
     # flags.DEFINE_string("dataset", "adult", "the name of dataset")
