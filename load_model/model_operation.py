@@ -74,10 +74,11 @@ def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
 
 def main(argv=None):
  # TODO 先训练一个 adult的模型，之后再来跑所有的
-    for i in range(1):
+    for i in range(len(data_set_list)):
         # if 'session' in locals() and sess is not None:
         #     sess.close()
-
+        if i == 0:
+            continue
         training(dataset = data_set_list[i],
                 model_path = FLAGS.model_path,
                 nb_epochs=FLAGS.nb_epochs,
@@ -86,7 +87,7 @@ def main(argv=None):
                 dataset_path= data_path_list[i],
                 input_shape= data_shape_list[i]
                  )
-    print('home\'s original models trained with dataset home from aif360 done.')
+    print('%s\'s original models trained with dataset home from aif360 done.' % data_set_list[i])
 
 if __name__ == '__main__':
     # flags.DEFINE_string("dataset", "adult", "the name of dataset")
