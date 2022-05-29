@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append("../")
 
@@ -15,6 +16,9 @@ dataset_shape_list = get_data_shape_list()
 
 def learn_all_rankers():
     for i in range(len(dataset_name_list)):
+        if i == 0:
+            continue
+        print('current dataset is %s' % dataset_name_list[i])
         input_shape = dataset_shape_list[i]
         nb_classes = 2
         tf.set_random_seed(1234)
@@ -39,13 +43,17 @@ def learn_all_rankers():
         x_origin = np.load(x_path)
         y_origin = np.load(y_path)
         ranker_array = np.ndarray((x_origin.shape[0], 2), dtype=np.float32)
-        for i in range(x_origin.shape[0]):
+        for j in range(x_origin.shape[0]):
             # label_tmp = model_argmax(sess, x, preds, np.array([x_origin[i]]))
-            ranker_score = model_probab(sess, x, preds, np.array([x_origin[i]]))
-            ranker_array[i] = ranker_score
+            ranker_score = model_probab(sess, x, preds, np.array([x_origin[j]]))
+            ranker_array[j] = ranker_score
 
         #    save result
-        np.save('ranker_result_origin/' + dataset_name_list[i] + '/2dims_result.npy', ranker_array)
+        save_path = 'ranker_result_origin/' + dataset_name_list[i] + '/'
+        if not os._exists(save_path):
+            os.makedirs(save_path)
+        np.save('ranker_result_origin/' + dataset_name_list[i] + '/'+ '2dims_result.npy', ranker_array)
+        sess.close()
     print('done with learn all rankers')
 
 

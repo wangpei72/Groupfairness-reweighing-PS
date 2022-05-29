@@ -6,8 +6,7 @@ import tensorflow as tf
 from tensorflow.python.platform import flags
 
 from utils.utils_tf import *
-from tutorial_models import dnn
-
+from . import tutorial_models
 FLAGS = flags.FLAGS
 
 data_set_list = ['adult','bank', 'compas', 'default',
@@ -55,7 +54,7 @@ def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
     # sess = tf.Session(config=config)
     x = tf.placeholder(tf.float32, shape=input_shape)
     y = tf.placeholder(tf.float32, shape=(None, nb_classes))
-    model = dnn(input_shape, nb_classes)
+    model = tutorial_models.dnn(input_shape, nb_classes)
     preds = model(x)
 
     # training parameters
