@@ -1,0 +1,13 @@
+adult:
+Total shape is: (48842, 15)
+Train set shape is: (39073,15)
+Test set shape is: (9768,15)
+Features: age
+,workclass,fnlwgt,education,education-num,marital-status,occupation,relationship,race,sex,capital-gain
+,capital-loss,hours-per-week,native-country
+
+Labels is : income-per-year
+Protected attrs : personal_status race 
+Meta-data :
+label_map : {1: '>50K', 0: '<=50K'}
+all_protected_attribute_maps : {'personal_status': {1: 'Male', 0: 'Female'}, 'race': {1: 'White', 0: 'Non-white'}}

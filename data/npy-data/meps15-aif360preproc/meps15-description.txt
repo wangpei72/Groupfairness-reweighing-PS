@@ -1,0 +1,18 @@
+meps15:
+Total shape is: (33400, 43)
+shape contains features(shape[0] - 1) and labels(1)Train set shape is: (26720,43)
+Test set shape is: (6680,43)
+Features: REGION
+,AGE,SEX,RACE,MARRY,FTSTU,ACTDTY,HONRDC,RTHLTH,MNHLTH,HIBPDX
+,CHDDX,ANGIDX,MIDX,OHRTDX,STRKDX,EMPHDX,CHBRON,CHOLDX,CANCERDX,DIABDX
+,JTPAIN,ARTHDX,ARTHTYPE,ASTHDX,ADHDADDX,PREGNT,WLKLIM,ACTLIM,SOCLIM,COGLIM
+,DFHEAR42,DFSEE42,ADSMOK42,PCS42,MCS42,K6SUM42,PHQ242,EMPST,POVCAT,INSCOV
+,UTILIZATION,PERWT15F
+
+Labels is : UTILIZATION label index in csv file table is: 
+41
+Protected attrs : RACE index is :3
+
+Meta-data :
+label_map : {1: '>= 10 visits', 0: '< 10 visits'}
+all_protected_attribute_maps : {'RACE': {1: 'White', 0: 'Non-white'}}

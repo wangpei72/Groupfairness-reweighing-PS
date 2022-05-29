@@ -1,0 +1,14 @@
+bank:
+Total shape is: (4119, 21)
+Train set shape is: (3295,21)
+Test set shape is: (823,21)
+Features: age
+,job,marital,education,default,housing,loan,contact,month,day_of_week,duration
+,campaign,pdays,previous,poutcome,emp.var.rate,cons.price.idx,cons.conf.idx,euribor3m,nr.employed,y
+
+
+Labels is : y
+Protected attrs : age 
+Meta-data :
+label_map : {1.0: 'yes', 0.0: 'no'}
+all_protected_attribute_maps : {'age': {1.0: 'Old', 0.0: 'Young'}}

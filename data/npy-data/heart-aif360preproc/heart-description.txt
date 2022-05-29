@@ -1,0 +1,13 @@
+heart:
+Total shape is: (297, 14)
+Train set shape is: (237,14)
+Test set shape is: (59,14)
+Features: age
+,sex,cp,trestbps,chol,fbs,restecg,thalach,exang,oldpeak,slope
+,ca,thal,Probability
+
+Labels is : Probability
+Protected attrs : age 
+Meta-data :
+label_map : {1: 'absence', 0: 'presence'}
+all_protected_attribute_maps = {'age': {1: 'Young', 0: 'Old'}}

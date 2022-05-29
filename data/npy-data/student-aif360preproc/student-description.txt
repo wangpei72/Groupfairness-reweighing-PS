@@ -1,0 +1,22 @@
+student:
+Total shape is: (1044, 33)
+Train set shape is: (835,33)
+Test set shape is: (208,33)
+Features: school
+,sex,age,address,famsize,Pstatus,Medu,Fedu,Mjob,Fjob,reason
+,guardian,traveltime,studytime,failures,schoolsup,famsup,paid,activities,nursery,higher
+,internet,romantic,famrel,freetime,goout,Dalc,Walc,health,absences,G1
+,G2,Probability
+
+Labels is : Probability
+Protected attrs : sex 
+Meta-data :
+label_map : {1: 'higher than mean', 0: 'lower than mean'}
+all_protected_attribute_maps : {'sex': {1: 'Male', 0: 'Female'}}
+
+attrs_with_separate:
+'school'
+,'sex','age','address','famsize','Pstatus','Medu','Fedu','Mjob','Fjob','reason'
+,'guardian','traveltime','studytime','failures','schoolsup','famsup','paid','activities','nursery','higher'
+,'internet','romantic','famrel','freetime','goout','Dalc','Walc','health','absences','G1'
+,'G2','Probability'

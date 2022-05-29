@@ -1,0 +1,15 @@
+german:
+20  attrs, 1 label
+Total shape is: (1000, 21)
+Train set shape is: (800,21)
+Test set shape is: (200,21)
+Features: status
+,month,credit_history,purpose,credit_amount,savings,employment,investment_as_income_percentage,personal_status,other_debtors,residence_since
+,property,age,installment_plans,housing,number_of_credits,skill_level,people_liable_for,telephone,foreign_worker,credit
+
+
+Labels is : credit
+Protected attrs : personal_status age 
+Meta-data :
+label_map : {1: 'Good Credit', 0: 'Bad Credit'}
+all_protected_attribute_maps : {'personal_status': {1: 'Male', 0: 'Female'}, 'age': {1: 'Old', 0: 'Young'}}

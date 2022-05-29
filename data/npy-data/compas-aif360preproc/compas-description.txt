@@ -1,0 +1,14 @@
+compas:
+Total shape is: (6907, 22)
+Train set shape is: (5525,22)
+Test set shape is: (1381,22)
+Features: sex
+,age,race,juv_fel_count,decile_score,juv_misd_count,juv_other_count,priors_count,days_b_screening_arrest,c_days_from_compas,c_charge_degree
+,c_charge_desc,is_recid,r_charge_desc,is_violent_recid,score_text,v_decile_score,v_score_text,event,start_end
+,max_duration,two_year_recid
+
+Labels is : two_year_recid
+Protected attrs : sex race 
+Meta-data :
+label_map : {1.0: 'Did recid.', 0.0: 'No recid.'}
+all_protected_attribute_maps : {'sex': {0: 'Male', 1: 'Female'}, 'race': {1: 'Caucasian', 0: 'Not Caucasian'}}
