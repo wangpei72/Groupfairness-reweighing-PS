@@ -26,6 +26,14 @@ data_path_list = ['../data/npy_data_from_aif360/adult-aif360preproc/',
                   '../data/npy_data_from_aif360/meps16-aif360preproc/',
                   '../data/npy_data_from_aif360/student-aif360preproc/'
                   ]
+def dataset_list():
+    return data_set_list
+
+def get_data_shape_list():
+    return data_shape_list
+
+def get_data_path_list():
+    return data_path_list
 
 def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
              dataset_path='../data/npy_data_from_aif360/adult-aif360preproc/',

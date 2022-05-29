@@ -7,7 +7,7 @@ Features: age
 ,capital-loss,hours-per-week,native-country
 
 Labels is : income-per-year
-Protected attrs : personal_status race 
+Protected attrs : sex race
 Meta-data :
 label_map : {1: '>50K', 0: '<=50K'}
-all_protected_attribute_maps : {'personal_status': {1: 'Male', 0: 'Female'}, 'race': {1: 'White', 0: 'Non-white'}}
+all_protected_attribute_maps : {'sex': {1: 'Male', 0: 'Female'}, 'race': {1: 'White', 0: 'Non-white'}}
