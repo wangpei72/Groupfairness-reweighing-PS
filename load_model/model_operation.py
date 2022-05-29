@@ -10,32 +10,26 @@ from tutorial_models import dnn
 
 FLAGS = flags.FLAGS
 
-# data_set_list = ['adult', 'compas', 'german']
-# data_shape_list = [(None, 18), (None, 10), (None, 11)]
-# data_path_list = ['../data/npy_data_from_aif360/adult-aif360preproc/',
-#                   '../data/npy_data_from_aif360/compas-aif360preproc/',
-#                   '../data/npy_data_from_aif360/german-aif360preproc/']
-# data_set_list = ['bank']
-# data_shape_list = [(None, 28)]
-# data_path_list = ['../data/npy_data_from_aif360/bank-aif360preproc/']
-# data_set_list = ['default']
-# data_shape_list = [(None, 26)]
-# data_path_list = ['../data/npy_data_from_aif360/default-aif360preproc/']
-# data_set_list = ['heart']
-# data_shape_list = [(None, 13)]
-# data_path_list = ['../data/npy_data_from_aif360/heart-aif360preproc/']
-# data_set_list = ['student']
-# data_shape_list = [(None, 32)]
-# data_path_list = ['../data/npy_data_from_aif360/student-aif360preproc/']
-# data_set_list = ['meps']
-# data_shape_list = [(None, 138)]
-# data_path_list = ['../data/npy_data_from_aif360/meps-aif360preproc/']
-data_set_list = ['home_credit']
-data_shape_list = [(None, 99)]
-data_path_list = ['../data/npy_data_from_aif360/home_credit-aif360preproc/']
+data_set_list = ['adult','bank', 'compas', 'default',
+                 'german', 'heart', 'meps15', 'meps16',
+                 'student']
+data_shape_list = [(None, 14), (None, 20), (None, 21), (None, 23),
+                   (None, 20), (None, 13), (None, 42), (None, 42),
+                   (None, 32)]
+data_path_list = ['../data/npy_data_from_aif360/adult-aif360preproc/',
+                  '../data/npy_data_from_aif360/bank-aif360preproc/',
+                  '../data/npy_data_from_aif360/compas-aif360preproc/',
+                  '../data/npy_data_from_aif360/default-aif360preproc/',
+                  '../data/npy_data_from_aif360/german-aif360preproc/',
+                  '../data/npy_data_from_aif360/heart-aif360preproc/',
+                  '../data/npy_data_from_aif360/meps15-aif360preproc/',
+                  '../data/npy_data_from_aif360/meps16-aif360preproc/',
+                  '../data/npy_data_from_aif360/student-aif360preproc/'
+                  ]
+
 def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
              dataset_path='../data/npy_data_from_aif360/adult-aif360preproc/',
-             input_shape=(None, 18),
+             input_shape=(None, 14),
              nb_classes=2
              ):
     # prepare the data and model
@@ -79,8 +73,8 @@ def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
 
 
 def main(argv=None):
-
-    for i in range(len(data_set_list)):
+ # TODO 先训练一个 adult的模型，之后再来跑所有的
+    for i in range(1):
         # if 'session' in locals() and sess is not None:
         #     sess.close()
 

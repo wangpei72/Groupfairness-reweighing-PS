@@ -1,6 +1,6 @@
 meps16:
 Total shape is: (32006, 43)
-shape contains features(shape[0] - 1) and labels(1)Train set shape is: (25604,43)
+shape contains features(shape[1] - 1) and labels(1)Train set shape is: (25604,43)
 Test set shape is: (6401,43)
 Features: REGION
 ,AGE,SEX,RACE,MARRY,FTSTU,ACTDTY,HONRDC,RTHLTH,MNHLTH,HIBPDX
