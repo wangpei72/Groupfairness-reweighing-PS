@@ -1,5 +1,7 @@
 import math
+import os
 import sys
+import time
 
 sys.path.append("../")
 import numpy as np
@@ -10,59 +12,14 @@ import common_utils as cu
 # DN-ranker(up-unfav) FN-ranker(p-unfav)这两个按照proba降序排列，排在最前面的prob数值更大
 # 是D还是F由sex是0还是1决定 TODO 需要更改成根据语义判断是0优势还是1优势
 # 是P还是N由y-label是1还是0决定
-data_set_list = ['adult', 'compas', 'german', 'bank',
-                 'default', 'heart', 'student',
-                 'meps15', 'meps16']
-data_set_list_compat = ['adult', 'adult',
-                        'compas', 'compas',
-                        'german', 'bank',
-                        'default', 'heart', 'student',
-                        'meps15', 'meps16']
-dataset_with_d_attr_list = ['adult_race', 'adult_sex',
-                            'compas_race', 'compas_sex',
-                            'german_sex',
-                            'bank_age',
-                            'default_sex',
-                            'heart_age',
-                            'student_sex',
-                            'meps15_race',
-                            'meps16_race']
-dataset_d_attr_name_map = {'adult_race': 'race', 'adult_sex': 'sex', 'compas_race': 'race',
-                           'compas_sex': 'sex', 'german_sex': 'sex', 'bank_age': 'age',
-                           'default_sex': 'x2', 'heart_age': 'age', 'student_sex': 'sex',
-                           'meps15_race': 'race', 'meps16_race': 'race'}
 
-d_attr_idx_map = {'adult_race': 8, 'adult_sex': 9, 'compas_race': 2,
-                  'compas_sex': 0, 'german_sex': 8, 'bank_age': 0,
-                  'default_sex': 1, 'heart_age': 0, 'student_sex': 1,
-                  'meps15_race': 3, 'meps16_race': 3}
-
-d_categoric_meta_map = {'adult_race': {1: 'White', 0: 'Non-white'},
-                        'adult_sex': {1: 'Male', 0: 'Female'},
-                        'compas_race': {1: 'Caucasian', 0: 'Not Caucasian'},
-                        'compas_sex': {0: 'Male', 1: 'Female'},
-                        'german_sex': {1: 'Male', 0: 'Female'},
-                        'bank_age': {1: 'Old', 0: 'Young'},
-                        'default_sex': {1: 'Male', 0: 'Female'},
-                        'heart_age': {1: 'Young', 0: 'Old'},
-                        'student_sex': {1: 'Male', 0: 'Female'},
-                        'meps15_race': {1: 'White', 0: 'Non-white'},
-                        'meps16_race': {1: 'White', 0: 'Non-white'}}
-
-fav_d_map = {'adult_race': 1,
-             'adult_sex': 1,
-             'compas_race': 1,
-             'compas_sex': 0,
-             'german_sex': 1,
-             'bank_age': 1,
-             'default_sex': 1,
-             'heart_age': 1,
-             'student_sex': 1,
-             'meps15_race': 1,
-             'meps16_race': 1}
 
 # TODO 这里是传入所有敏感属性和属性所在下标的入口
-def get_conditionings_from_npy(x_path, y_path, protected_attribute_names=['sex'], protected_idx=8):
+def get_conditionings_from_npy(x_path, y_path, protected_attribute_names=['sex'], protected_idx=8,
+                               favorable_label=1.0,
+                               unfavorable_label=0.0,
+                               condition_dict_priv=[{'sex': 1}],
+                               condition_dict_unpriv=[{'sex': 0}]):
     """
     这个函数会返回四类数据集：pf, punf, upf, upunf的condition， 获得的condition可以直接应用再ndarray上用以获得
     对应的index_slices 四个np.ndarray, 分别包含着index的列表，index以原先的xy的index为准
@@ -78,27 +35,58 @@ def get_conditionings_from_npy(x_path, y_path, protected_attribute_names=['sex']
 
     (priv_cond, unpriv_cond, fav_cond, unfav_cond,
      cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav) = \
-        cu._obtain_conditionings(condition_dict_priv=[{'sex': 1}],
-                                 condition_dict_unpriv=[{'sex': 0}],
+        cu._obtain_conditionings(condition_dict_priv=condition_dict_priv,
+                                 condition_dict_unpriv=condition_dict_unpriv,
                                  protected_attributes=protected_attributes,
                                  protected_attribute_names=protected_attribute_names,
                                  labels=labels,
-                                 favorable_label=1.0,
-                                 unfavorable_label=0.0)
+                                 favorable_label=favorable_label,
+                                 unfavorable_label=unfavorable_label,
+                                 index=protected_idx)
 
     return cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav
 
 
-def gen_all_sets(ranker_filepath, x_path, y_path, dataset_d_name='adult_race'):
+def gen_all_sets(ranker_filepath, x_path, y_path, dataset_d_name='adult_race',
+                 protected_attribute_names=['sex'],
+                 protected_idx=8,
+                 favorable_label=1.0,
+                 unfavorable_label=0.0,
+                 condition_dict_priv=[{'sex': 1}],
+                 condition_dict_unpriv=[{'sex': 0}]):
     x_origin = np.load(x_path)
     y_origin = np.load(y_path)
-    ranker_origin = np.load(ranker_filepath)
+    print('>>>>>>>>>loaded npy data done, generating x y files  ...<<<<<<<<')
+    s_time = time.time()
     x_up_fav, x_p_fav, x_up_unfav, x_p_unfav = \
-        get_x_index_slices(x_path, y_path)
+        get_x_index_slices(x_path, y_path,
+                           protected_attribute_names=protected_attribute_names,
+                           protected_idx=protected_idx,
+                           favorable_label=favorable_label,
+                           unfavorable_label=unfavorable_label,
+                           condition_dict_priv=condition_dict_priv,
+                           condition_dict_unpriv=condition_dict_unpriv
+                           )
     DP_up_fav_asc, FP_p_fav_asc, DN_up_unfav_desc, FN_p_unfav_desc = \
-        get_sorted_rankers(ranker_filepath, x_path, y_path)
+        get_sorted_rankers(ranker_filepath, x_path, y_path,
+                           protected_attribute_names=protected_attribute_names,
+                           protected_idx=protected_idx,
+                           favorable_label=favorable_label,
+                           unfavorable_label=unfavorable_label,
+                           condition_dict_priv=condition_dict_priv,
+                           condition_dict_unpriv=condition_dict_unpriv,
+                           dateset_d_name=dataset_d_name)
+    e_time = time.time()
+    dura = e_time - s_time
+    print('get sorted ranker takes %f s' % dura)
     # DP FP DN FN
-    wght_up_fav, wght_p_fav, wght_up_unfav, wght_p_unfav = get_weights_tuple(x_origin, y_origin)
+    wght_up_fav, wght_p_fav, wght_up_unfav, wght_p_unfav = get_weights_tuple(x_origin, y_origin,
+                                                                             protected_attribute_idx=protected_idx,
+                                                                             protected_attribute_names=protected_attribute_names,
+                                                                             condition_dict_priv=condition_dict_priv,
+                                                                             condition_dict_unpriv=condition_dict_unpriv,
+                                                                             favorable_label=favorable_label,
+                                                                             unfavorable_label=unfavorable_label)
     DP_set, DP_label = gen_DP_set(DP_up_fav_asc, x_up_fav, x_origin, y_origin, wght_up_fav)
     FP_set, FP_label = gen_FP_set(FP_p_fav_asc, x_p_fav, x_origin, y_origin, wght_p_fav)
     DN_set, DN_label = gen_DN_set(DN_up_unfav_desc, x_up_unfav, x_origin, y_origin, wght_up_unfav)
@@ -108,14 +96,23 @@ def gen_all_sets(ranker_filepath, x_path, y_path, dataset_d_name='adult_race'):
     final_gen_label = np.concatenate((DP_label, FP_label, DN_label, FN_label), axis=0)
 
     # 32561 -> 31380
+    print('>>>>>>>>>>>generating sets done, saving file ...<<<<<<<')
+    save_dir = 'result_dataset/' + dataset_d_name
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
     np.save('result_dataset/' + dataset_d_name + '/x_generated.npy', final_gen_set)
     np.save('result_dataset/' + dataset_d_name + '/y_generated.npy', final_gen_label)
     return final_gen_set, final_gen_label
 
 
-def get_x_index_slices(x, y):
+def get_x_index_slices(x, y, protected_attribute_names=['sex'], protected_idx=8,favorable_label=1.0,
+                                 unfavorable_label=0.0,condition_dict_priv=[{'sex': 1}],
+                                 condition_dict_unpriv=[{'sex': 0}]):
     cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav = \
-        get_conditionings_from_npy(x, y)
+        get_conditionings_from_npy(x, y, protected_attribute_names=protected_attribute_names,
+                                   protected_idx=protected_idx,favorable_label=favorable_label,
+                                 unfavorable_label=unfavorable_label,condition_dict_priv=condition_dict_priv,
+                                 condition_dict_unpriv=condition_dict_unpriv)
     x_p_fav = np.argwhere(cond_p_fav)
     x_p_unfav = np.argwhere(cond_p_unfav)
     x_up_fav = np.argwhere(cond_up_fav)
@@ -124,24 +121,37 @@ def get_x_index_slices(x, y):
     return x_up_fav, x_p_fav, x_up_unfav, x_p_unfav
 
 #  TODO 需要更改选定敏感属性的逻辑 只需要对idx进行操作即可
-def get_sorted_rankers(ranker_origin_npy, x, y, protected_attr_idx=8):
+def get_sorted_rankers(ranker_origin_npy, x, y,  protected_attribute_names=['sex'], protected_idx=8,
+                       favorable_label=1.0,unfavorable_label=0.0,condition_dict_priv=[{'sex': 1}],
+                                 condition_dict_unpriv=[{'sex': 0}], dateset_d_name='adult_race'):
+    print('>>>>>>>>>>>>>getting sorted ranker ...<<<<<<<<<<<<<<<<')
+    if os.path.exists('sorted_ranker/' + dateset_d_name + '/DP_up_fav_asc.npy'):
+        print('>>>>>>>>>>>>>found cache reloading from npy ...<<<<<<<<<<<<<<<<<<')
+        DP_up_fav_asc = np.load('sorted_ranker/' + dateset_d_name + '/DP_up_fav_asc.npy').tolist()
+        FP_p_fav_asc = np.load('sorted_ranker/' + dateset_d_name + '/FP_p_fav_asc.npy').tolist()
+        DN_up_unfav_desc = np.load('sorted_ranker/' + dateset_d_name + '/DN_up_unfav_desc.npy').tolist()
+        FN_p_unfav_desc = np.load('sorted_ranker/' + dateset_d_name + '/FN_p_unfav_desc.npy').tolist()
+        return DP_up_fav_asc, FP_p_fav_asc, DN_up_unfav_desc, FN_p_unfav_desc
     x_origin = np.load(x)
     y_origin = np.load(y)
     ranker_origin = np.load(ranker_origin_npy)
     shape_x = x_origin.shape
 
-    protected_attributes = x_origin[:, protected_attr_idx]
-    protected_attributes = protected_attributes[:, np.newaxis]
+    protected_attributes = x_origin[:, protected_idx]
+    # protected_attributes = protected_attributes[:, np.newaxis]
     labels = y_origin[:, 1]
-    labels = labels[:, np.newaxis]
+    # labels = labels[:, np.newaxis]
 
     instance_weights = np.ones((shape_x[0],), dtype=np.float64)
-    n = np.sum(instance_weights, dtype=np.float64)
+    # n = np.sum(instance_weights, dtype=np.float64)
 
     #     我希望能返回四个np.ndarray, 分别包含着index的列表，index以原先的xy的index为准
     #     首先是按照四个condition来分成四个array，代表四大类，此时还没有排序
     cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav = \
-        get_conditionings_from_npy(x, y)
+        get_conditionings_from_npy(x, y, protected_attribute_names=protected_attribute_names,
+                                   protected_idx=protected_idx, favorable_label=favorable_label,
+                                 unfavorable_label=unfavorable_label,condition_dict_priv=condition_dict_priv,
+                                 condition_dict_unpriv=condition_dict_unpriv)
     x_p_fav = np.argwhere(cond_p_fav)
     x_p_unfav = np.argwhere(cond_p_unfav)
     x_up_fav = np.argwhere(cond_up_fav)
@@ -173,6 +183,12 @@ def get_sorted_rankers(ranker_origin_npy, x, y, protected_attr_idx=8):
     DN_up_unfav_desc = sort_negative_descend(x_up_unfav, ranker_origin)
     FN_p_unfav_desc = sort_negative_descend(x_p_unfav, ranker_origin)
 
+    if not os.path.exists('sorted_ranker/' + dateset_d_name):
+        os.mkdir('sorted_ranker/' + dateset_d_name + '/')
+    np.save('sorted_ranker/' + dateset_d_name + '/DP_up_fav_asc.npy', np.array(DP_up_fav_asc))
+    np.save('sorted_ranker/' + dateset_d_name + '/FP_p_fav_asc.npy', np.array(FP_p_fav_asc))
+    np.save('sorted_ranker/' + dateset_d_name + '/DN_up_unfav_desc.npy', np.array(DN_up_unfav_desc))
+    np.save('sorted_ranker/' + dateset_d_name + '/FN_p_unfav_desc.npy', np.array(FN_p_unfav_desc))
     return DP_up_fav_asc, FP_p_fav_asc, DN_up_unfav_desc, FN_p_unfav_desc
 
 
@@ -228,11 +244,16 @@ def sort_negative_descend(x_upri_or_pri, ranker_origin):
     return N_upri_or_pri_ranker
 
 # TODO 改变敏感属性传入方式
-def get_weights_tuple(x_origin, y_origin):
+def get_weights_tuple(x_origin, y_origin,condition_dict_priv=[{'sex': 1}],
+                                 condition_dict_unpriv=[{'sex': 0}],
+                                 protected_attribute_names=['sex'],
+                                 protected_attribute_idx = 8,
+                                 favorable_label=1.0,
+                                 unfavorable_label=0.0):
     shape_x = x_origin.shape
     shape_y = y_origin.shape
-    protected_attribute_names = ['sex']
-    protected_attributes = x_origin[:, 8]
+
+    protected_attributes = x_origin[:, protected_attribute_idx]
     protected_attributes = protected_attributes[:, np.newaxis]
     labels = y_origin[:, 1]
     labels = labels[:, np.newaxis]
@@ -240,13 +261,14 @@ def get_weights_tuple(x_origin, y_origin):
     instance_weights = np.ones((shape_x[0],), dtype=np.float64)
     (priv_cond, unpriv_cond, fav_cond, unfav_cond,
      cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav) = \
-        cu._obtain_conditionings(condition_dict_priv=[{'sex': 1}],
-                                 condition_dict_unpriv=[{'sex': 0}],
+        cu._obtain_conditionings(condition_dict_priv=condition_dict_priv,
+                                 condition_dict_unpriv=condition_dict_unpriv,
                                  protected_attributes=protected_attributes,
                                  protected_attribute_names=protected_attribute_names,
                                  labels=labels,
-                                 favorable_label=1.0,
-                                 unfavorable_label=0.0)
+                                 favorable_label=favorable_label,
+                                 unfavorable_label=unfavorable_label,
+                                 index=protected_attribute_idx)
     weights_dict = cu.fit(instance_weights,
                           priv_cond, unpriv_cond, fav_cond, unfav_cond,
                           cond_p_fav, cond_p_unfav, cond_up_fav, cond_up_unfav
@@ -318,10 +340,12 @@ def gen_DN_set(DN_up_unfav_desc, x_up_unfav, x_origin, y_origin, wght_up_unfav):
     DN_num = x_up_unfav.shape[0]
     remainder_num = np.floor(DN_num * wght_remainder)
     tmp = DN_num - 1
-
+    assert remainder_num > 0
     for j in range(int(remainder_num)):
         #         找排在最前面的 循环置底
         if j == 0:
+            # 这行出了bug，是因为dn的wght本身被认为是小于1的，但是compas sex的情况确是1.085 >1
+            # 本身是以为只执行删除操作的
             DN_set = x_origin[DN_up_unfav_desc[tmp], np.newaxis]
             DN_label = y_origin[DN_up_unfav_desc[tmp], np.newaxis]
             tmp -= 1
@@ -340,7 +364,7 @@ def gen_FP_set(FP_p_fav_asc, x_p_fav, x_origin, y_origin, wght_p_fav):
     FP_num = x_p_fav.shape[0]
     remainder_num = np.floor(FP_num * wght_remainder)
     tmp = FP_num - 1
-
+    assert tmp + 1 == len(FP_p_fav_asc)
     for j in range(int(remainder_num)):
         #         找排在最前面的 循环置底
         if j == 0:
@@ -355,13 +379,5 @@ def gen_FP_set(FP_p_fav_asc, x_p_fav, x_origin, y_origin, wght_p_fav):
 
 
 if __name__ == '__main__':
-    # prob_origin = np.load('ranker_result_origin/2dims_result.npy')
-    # x_origin = np.load('../data/adult/data-x.npy')
-    # y_origin = np.load('../data/adult/data-y.npy')
-    # get_sorted_rankers('ranker_result_origin/2dims_result.npy',
-    #                    '../data/adult/data-x.npy',
-    #                    '../data/adult/data-y.npy')
-    gen_all_sets('ranker_result_origin/2dims_result.npy',
-                 '../data/adult/data-x.npy',
-                 '../data/adult/data-y.npy')
+
     print('end')

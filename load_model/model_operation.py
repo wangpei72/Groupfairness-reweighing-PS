@@ -80,7 +80,7 @@ def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
 
 
 def main(argv=None):
- # TODO 先训练一个 adult的模型，之后再来跑所有的
+
     for i in range(len(data_set_list)):
         # if 'session' in locals() and sess is not None:
         #     sess.close()

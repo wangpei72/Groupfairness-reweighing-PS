@@ -1,31 +1,31 @@
 # Metrics function
 from collections import OrderedDict
-from aif360.metrics import ClassificationMetric
+# from aif360.metrics import ClassificationMetric
 import numpy as np
 
 
-def compute_metrics(dataset_true, dataset_pred, 
-                    unprivileged_groups, privileged_groups,
-                    disp = True):
-    """ Compute the key metrics """
-    classified_metric_pred = ClassificationMetric(dataset_true,
-                                                 dataset_pred, 
-                                                 unprivileged_groups=unprivileged_groups,
-                                                 privileged_groups=privileged_groups)
-    metrics = OrderedDict()
-    metrics["Balanced accuracy"] = 0.5*(classified_metric_pred.true_positive_rate()+
-                                             classified_metric_pred.true_negative_rate())
-    metrics["Statistical parity difference"] = classified_metric_pred.statistical_parity_difference()
-    metrics["Disparate impact"] = classified_metric_pred.disparate_impact()
-    metrics["Average odds difference"] = classified_metric_pred.average_odds_difference()
-    metrics["Equal opportunity difference"] = classified_metric_pred.equal_opportunity_difference()
-    metrics["Theil index"] = classified_metric_pred.theil_index()
-    
-    if disp:
-        for k in metrics:
-            print("%s = %.4f" % (k, metrics[k]))
-    
-    return metrics
+# def compute_metrics(dataset_true, dataset_pred,
+#                     unprivileged_groups, privileged_groups,
+#                     disp = True):
+#     """ Compute the key metrics """
+#     classified_metric_pred = ClassificationMetric(dataset_true,
+#                                                  dataset_pred,
+#                                                  unprivileged_groups=unprivileged_groups,
+#                                                  privileged_groups=privileged_groups)
+#     metrics = OrderedDict()
+#     metrics["Balanced accuracy"] = 0.5*(classified_metric_pred.true_positive_rate()+
+#                                              classified_metric_pred.true_negative_rate())
+#     metrics["Statistical parity difference"] = classified_metric_pred.statistical_parity_difference()
+#     metrics["Disparate impact"] = classified_metric_pred.disparate_impact()
+#     metrics["Average odds difference"] = classified_metric_pred.average_odds_difference()
+#     metrics["Equal opportunity difference"] = classified_metric_pred.equal_opportunity_difference()
+#     metrics["Theil index"] = classified_metric_pred.theil_index()
+#
+#     if disp:
+#         for k in metrics:
+#             print("%s = %.4f" % (k, metrics[k]))
+#
+#     return metrics
 
 
 default_map = ['age', 'workclass', 'fnlwgt', 'education', 'education-num', 'marital-status',
@@ -59,8 +59,29 @@ def compute_boolean_conditioning_vector(X, feature_names=None, condition=None):
 
     return overall_cond
 
+def compute_boolean_conditioning_vector_index(X, feature_names=None, condition=None, index=0):
+    """
+    condition (list(dict))
+    Examples:
+        >>> condition = [{'sex': 1, 'age': 1}, {'sex': 0}]
 
-def compute_num_instances(X, w, feature_names=None, condition=None):
+        This corresponds to `(sex == 1 AND age == 1) OR (sex == 0)`.
+    """
+    if feature_names is None:
+        feature_names = default_map
+    if condition is None:
+        return np.ones(X.shape[0], dtype=bool)
+
+    overall_cond = np.zeros(X.shape[0], dtype=bool)
+    for group in condition:
+        group_cond = np.ones(X.shape[0], dtype=bool)
+        for name, val in group.items():
+            index = 0
+            group_cond = np.logical_and(group_cond, X[:, index] == val)
+        overall_cond = np.logical_or(overall_cond, group_cond)
+
+    return overall_cond
+def compute_num_instances(X, w, feature_names=None, condition=None, index=0):
     """Compute the number of instances, :math:`n`, conditioned on the protected
     attribute(s).
 
@@ -78,17 +99,17 @@ def compute_num_instances(X, w, feature_names=None, condition=None):
     # condition if necessary
     if feature_names is None:
         feature_names = default_map
-    cond_vec = compute_boolean_conditioning_vector(X, feature_names, condition)
+    cond_vec = compute_boolean_conditioning_vector_index(X, feature_names, condition,index=index)
 
     return np.sum(w[cond_vec], dtype=np.float64)
 
 
-def get_subset_by_protected_attr(X, privileged=True):
-    condition_boolean_vector = compute_boolean_conditioning_vector(X, condition=[{'sex': 1}])
+def get_subset_by_protected_attr(X, privileged=True, index=0):
+    condition_boolean_vector = compute_boolean_conditioning_vector_index(X, condition=[{'sex': 1}], index=index)
 
 
 def compute_num_TF_PN(X, y_true, y_pred, w, feature_names, favorable_label,
-                      unfavorable_label, condition=None):
+                      unfavorable_label, condition=None,index =0):
     """Compute the number of true/false positives/negatives optionally
     conditioned on protected attributes.
 
@@ -108,8 +129,8 @@ def compute_num_TF_PN(X, y_true, y_pred, w, feature_names, favorable_label,
         Number of positives/negatives (optionally conditioned).
     """
     # condition if necessary
-    cond_vec = compute_boolean_conditioning_vector(X, feature_names,
-        condition=condition)
+    cond_vec = compute_boolean_conditioning_vector_index(X, feature_names,
+        condition=condition,index=index)
 
     # to prevent broadcasts
     y_true = y_true.ravel()
@@ -130,7 +151,7 @@ def compute_num_TF_PN(X, y_true, y_pred, w, feature_names, favorable_label,
 
 
 def compute_num_gen_TF_PN(X, y_true, y_score, w, feature_names, favorable_label,
-                    unfavorable_label, condition=None):
+                    unfavorable_label, index=0,condition=None):
     """Compute the number of generalized true/false positives/negatives
     optionally conditioned on protected attributes. Generalized counts are based
     on scores and not on the hard predictions.
@@ -153,8 +174,8 @@ def compute_num_gen_TF_PN(X, y_true, y_score, w, feature_names, favorable_label,
         Number of positives/negatives (optionally conditioned).
     """
     # condition if necessary
-    cond_vec = compute_boolean_conditioning_vector(X, feature_names,
-        condition=condition)
+    cond_vec = compute_boolean_conditioning_vector_index(X, feature_names,
+        condition=condition, index=index)
 
     # to prevent broadcasts
     y_true = y_true.ravel()
@@ -177,19 +198,21 @@ def _obtain_conditionings(condition_dict_priv,
                           protected_attributes,
                           protected_attribute_names,
                           labels, favorable_label,
-                          unfavorable_label):
+                          unfavorable_label, index= 0):
     """Obtain the necessary conditioning boolean vectors to compute
            instance level weights.
            """
     # conditioning
-    priv_cond = compute_boolean_conditioning_vector(
+    priv_cond = compute_boolean_conditioning_vector_index(
         protected_attributes,
         protected_attribute_names,
-        condition=condition_dict_priv)
-    unpriv_cond = compute_boolean_conditioning_vector(
+        condition=condition_dict_priv,
+        index=index)
+    unpriv_cond = compute_boolean_conditioning_vector_index(
         protected_attributes,
         protected_attribute_names,
-        condition=condition_dict_unpriv)
+        condition=condition_dict_unpriv,
+        index=index)
     fav_cond = labels.ravel() == favorable_label
     unfav_cond = labels.ravel() == unfavorable_label
 

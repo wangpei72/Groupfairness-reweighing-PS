@@ -1,0 +1,2 @@
+status,month,credit_history,purpose,credit_amount,savings,employment,investment_as_income_percentage,sex,other_debtors,residence_since
+,property,age,installment_plans,housing,number_of_credits,skill_level,people_liable_for,telephone,foreign_worker,credit

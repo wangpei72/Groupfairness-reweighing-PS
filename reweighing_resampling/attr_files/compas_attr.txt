@@ -1,0 +1,3 @@
+sex,age,race,juv_fel_count,decile_score,juv_misd_count,juv_other_count,priors_count,days_b_screening_arrest,c_days_from_compas,c_charge_degree
+,c_charge_desc,is_recid,r_charge_desc,is_violent_recid,score_text,v_decile_score,v_score_text,event,start_end
+,max_duration,two_year_recid
