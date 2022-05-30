@@ -97,11 +97,11 @@ def gen_all_sets(ranker_filepath, x_path, y_path, dataset_d_name='adult_race',
 
     # 32561 -> 31380
     print('>>>>>>>>>>>generating sets done, saving file ...<<<<<<<')
-    save_dir = 'result_dataset/' + dataset_d_name
+    save_dir = 'result_dataset_rename/' + dataset_d_name
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    np.save('result_dataset/' + dataset_d_name + '/x_generated.npy', final_gen_set)
-    np.save('result_dataset/' + dataset_d_name + '/y_generated.npy', final_gen_label)
+    np.save('result_dataset_rename/' + dataset_d_name + '/features-train.npy', final_gen_set)
+    np.save('result_dataset_rename/' + dataset_d_name + '/2d-labels-train.npy', final_gen_label)
     return final_gen_set, final_gen_label
 
 
