@@ -30,12 +30,16 @@ def learn_all_rankers():
         y = tf.placeholder(tf.float32, shape=(None, nb_classes))
         model = dnn(input_shape, nb_classes)
         preds = model(x)
-
-        saver = tf.train.Saver()
-        model_path = '../model_from_aif360data/' + dataset_name_list[i] + '/999/test.model'
-        saver.restore(sess, model_path)
         # construct the gradient graph
         grad_0 = gradient_graph(x, preds)
+        model_path = '../model_from_aif360data/' + dataset_name_list[i] + '/dnn5/999/test.model'
+        saver = tf.train.import_meta_graph(model_path + '.meta')
+
+        saver.restore(sess, model_path)
+        sess.run(
+            [tf.global_variables_initializer(),
+             tf.local_variables_initializer()]
+        )
 
         # learn ranker
         x_path = dataset_path_list[i] + 'features-train.npy'
@@ -50,10 +54,11 @@ def learn_all_rankers():
 
         #    save result
         save_path = 'ranker_result_origin/' + dataset_name_list[i] + '/'
-        if not os._exists(save_path):
+        if not os.path.exists(save_path):
             os.makedirs(save_path)
         np.save('ranker_result_origin/' + dataset_name_list[i] + '/'+ '2dims_result.npy', ranker_array)
         sess.close()
+        tf.reset_default_graph()
     print('done with learn all rankers')
 
 

@@ -133,6 +133,7 @@ if __name__ == '__main__':
     # 先拿到训练好的模型 和原始的训练集作为输入
     # 1 根据train集的分布计算出四个权重值 in features.npy 2d-labels.npy
     # 2 将train集x 和y进行模型的
-    get_all_reweighing_generated_sets()
+    work_flow_with_gen_ranker()
+    # get_all_reweighing_generated_sets()
     print('done')
 
