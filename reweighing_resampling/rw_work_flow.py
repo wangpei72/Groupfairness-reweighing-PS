@@ -6,6 +6,7 @@ import numpy as np
 
 from two_rankers import gen_all_sets
 from ranker_learner import learn_all_rankers
+
 data_set_list = ['adult', 'compas', 'german', 'bank',
                  'default', 'heart', 'student',
                  'meps15', 'meps16']
@@ -58,30 +59,31 @@ fav_d_map = {'adult_race': 1,
              'meps16_race': 1}
 # TODO 排序后的ranker进行是否有保存的文件供加载的判断
 fav_cond_map = {
-             'adult_race': [{'race': 1}],
-             'adult_sex': [{'sex': 1}],
-             'compas_race': [{'race': 1}],
-             'compas_sex': [{'sex': 1}],
-             'german_sex': [{'sex': 1}],
-             'bank_age': [{'age': 3}, {'age': 4},{'age': 5}, {'age': 6},{'age': 7}, {'age': 8},{'age': 9}],
-             'default_sex': [{'sex': 1}],
-             'heart_age': [ {'age': 2},{'age': 3}],
-             'student_sex': [{'sex': 1}],
-             'meps15_race': [{'race': 1}],
-             'meps16_race': [{'race': 1}]}
+    'adult_race': [{'race': 1}],
+    'adult_sex': [{'sex': 1}],
+    'compas_race': [{'race': 1}],
+    'compas_sex': [{'sex': 1}],
+    'german_sex': [{'sex': 1}],
+    'bank_age': [{'age': 3}, {'age': 4}, {'age': 5}, {'age': 6}, {'age': 7}, {'age': 8}, {'age': 9}],
+    'default_sex': [{'sex': 1}],
+    'heart_age': [{'age': 2}, {'age': 3}],
+    'student_sex': [{'sex': 1}],
+    'meps15_race': [{'race': 1}],
+    'meps16_race': [{'race': 1}]}
 unfav_cond_map = {
-             'adult_race': [{'race': 0}],
-             'adult_sex': [{'sex': 0}],
-             'compas_race': [{'race': 0}],
-             'compas_sex': [{'sex': 0}],
-             'german_sex': [{'sex': 0}],
-             'bank_age': [{'age': 0}, {'age': 1}, {'age': 2}],
-             'default_sex': [{'sex': 0}],
-             'heart_age': [ {'age': 4},{'age': 5}, {'age': 6},{'age': 7}],
-             'student_sex': [{'sex': 0}],
-             'meps15_race': [{'race': 0}],
-             'meps16_race': [{'race': 0}]
+    'adult_race': [{'race': 0}],
+    'adult_sex': [{'sex': 0}],
+    'compas_race': [{'race': 0}],
+    'compas_sex': [{'sex': 0}],
+    'german_sex': [{'sex': 0}],
+    'bank_age': [{'age': 0}, {'age': 1}, {'age': 2}],
+    'default_sex': [{'sex': 0}],
+    'heart_age': [{'age': 4}, {'age': 5}, {'age': 6}, {'age': 7}],
+    'student_sex': [{'sex': 0}],
+    'meps15_race': [{'race': 0}],
+    'meps16_race': [{'race': 0}]
 }
+
 
 def para_print(attr, idx, x_path, y_path, condition_p, condition_up):
     print('protected attribute is %s' % attr)
@@ -96,8 +98,6 @@ def para_print(attr, idx, x_path, y_path, condition_p, condition_up):
 
 def get_all_reweighing_generated_sets():
     for i in range(len(dataset_with_d_attr_list)):
-        if i == 1:
-            continue
         dataset_d_name = dataset_with_d_attr_list[i]
         print('=================current dataset and protected_attr is %s==================' % dataset_d_name)
         s_time = time()
@@ -128,6 +128,7 @@ def work_flow_with_gen_ranker():
     get_all_reweighing_generated_sets()
     print('done with work flow within generating ranker files')
 
+
 # TODO 将fav和unfav的参数，带上来，传进去
 if __name__ == '__main__':
     # 先拿到训练好的模型 和原始的训练集作为输入
@@ -136,4 +137,3 @@ if __name__ == '__main__':
     work_flow_with_gen_ranker()
     # get_all_reweighing_generated_sets()
     print('done')
-

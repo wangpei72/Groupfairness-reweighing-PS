@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.python.platform import flags
 
 from utils.utils_tf import *
-from tutorial_models import dnn
+import tutorial_models
 
 FLAGS = flags.FLAGS
 
@@ -16,15 +16,15 @@ data_set_list = ['adult','bank', 'compas', 'default',
 data_shape_list = [(None, 14), (None, 20), (None, 21), (None, 23),
                    (None, 20), (None, 13), (None, 42), (None, 42),
                    (None, 32)]
-data_path_list = ['../data/npy_data_from_aif360/adult/',
-                  '../data/npy_data_from_aif360/bank/',
-                  '../data/npy_data_from_aif360/compas/',
-                  '../data/npy_data_from_aif360/default/',
-                  '../data/npy_data_from_aif360/german/',
-                  '../data/npy_data_from_aif360/heart/',
-                  '../data/npy_data_from_aif360/meps15/',
-                  '../data/npy_data_from_aif360/meps16/',
-                  '../data/npy_data_from_aif360/student/'
+data_path_list = ['../data/npy_data_from_aif360/adult-aif360preproc/',
+                  '../data/npy_data_from_aif360/bank-aif360preproc/',
+                  '../data/npy_data_from_aif360/compas-aif360preproc/',
+                  '../data/npy_data_from_aif360/default-aif360preproc/',
+                  '../data/npy_data_from_aif360/german-aif360preproc/',
+                  '../data/npy_data_from_aif360/heart-aif360preproc/',
+                  '../data/npy_data_from_aif360/meps15-aif360preproc/',
+                  '../data/npy_data_from_aif360/meps16-aif360preproc/',
+                  '../data/npy_data_from_aif360/student-aif360preproc/'
                   ]
 data_path_with_d_list = ['../data/result_dataset_rename/adult_race/',
                   '../data/result_dataset_rename/adult_sex/',
@@ -86,7 +86,7 @@ def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
     # sess = tf.Session(config=config)
     x = tf.placeholder(tf.float32, shape=input_shape)
     y = tf.placeholder(tf.float32, shape=(None, nb_classes))
-    model = dnn(input_shape, nb_classes)
+    model = tutorial_models.dnn(input_shape, nb_classes)
     preds = model(x)
 
     # training parameters

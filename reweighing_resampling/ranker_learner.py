@@ -14,10 +14,8 @@ dataset_shape_list = get_data_shape_list()
 
 
 
-def learn_all_rankers():
+def learn_all_rankers(model_type='dnn5'):
     for i in range(len(dataset_name_list)):
-        if i == 0:
-            continue
         print('current dataset is %s' % dataset_name_list[i])
         input_shape = dataset_shape_list[i]
         nb_classes = 2
@@ -32,7 +30,8 @@ def learn_all_rankers():
         preds = model(x)
         # construct the gradient graph
         grad_0 = gradient_graph(x, preds)
-        model_path = '../model_from_aif360data/' + dataset_name_list[i] + '/dnn5/999/test.model'
+        model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'model_from_aif360data',
+                                  dataset_name_list[i], model_type, '999', 'test.model')
         saver = tf.train.import_meta_graph(model_path + '.meta')
 
         saver.restore(sess, model_path)
