@@ -1,14 +1,16 @@
 default:
 Total shape is: (30000, 24)
-Train set shape is: (24000,24)
+shape contains features(shape[0] - 1) and labels(1)Train set shape is: (24000,24)
 Test set shape is: (6000,24)
 Features: X1
 ,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11
 ,X12,X13,X14,X15,X16,X17,X18,X19,X20,X21
 ,X22,X23,Y
 
-Labels is : Y
-Protected attrs : sex 
+Labels is : Y label index in csv file table is: 
+23
+Protected attrs : X2 index is :2
+
 Meta-data :
 label_map : {1: 'yes', 0: 'no'}
 all_protected_attribute_maps : {'X2': {1: 'Male', 0: 'Female'}}

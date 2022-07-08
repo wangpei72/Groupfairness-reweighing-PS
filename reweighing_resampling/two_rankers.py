@@ -53,7 +53,8 @@ def gen_all_sets(ranker_filepath, x_path, y_path, dataset_d_name='adult_race',
                  favorable_label=1.0,
                  unfavorable_label=0.0,
                  condition_dict_priv=[{'sex': 1}],
-                 condition_dict_unpriv=[{'sex': 0}]):
+                 condition_dict_unpriv=[{'sex': 0}],
+                 model_type='dnn5'):
     x_origin = np.load(x_path)
     y_origin = np.load(y_path)
     print('>>>>>>>>>loaded npy data done, generating x y files  ...<<<<<<<<')
@@ -75,7 +76,8 @@ def gen_all_sets(ranker_filepath, x_path, y_path, dataset_d_name='adult_race',
                            unfavorable_label=unfavorable_label,
                            condition_dict_priv=condition_dict_priv,
                            condition_dict_unpriv=condition_dict_unpriv,
-                           dateset_d_name=dataset_d_name)
+                           dateset_d_name=dataset_d_name,
+                           model_type=model_type)
     e_time = time.time()
     dura = e_time - s_time
     print('get sorted ranker takes %f s' % dura)
@@ -97,11 +99,11 @@ def gen_all_sets(ranker_filepath, x_path, y_path, dataset_d_name='adult_race',
 
     # 32561 -> 31380
     print('>>>>>>>>>>>generating sets done, saving file ...<<<<<<<')
-    save_dir = 'result_dataset_rename/' + dataset_d_name
+    save_dir = 'result_dataset_rename/' + dataset_d_name + '/' + model_type
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    np.save('result_dataset_rename/' + dataset_d_name + '/features-train.npy', final_gen_set)
-    np.save('result_dataset_rename/' + dataset_d_name + '/2d-labels-train.npy', final_gen_label)
+    np.save('result_dataset_rename/' + dataset_d_name + '/' + model_type + '/features-train.npy', final_gen_set)
+    np.save('result_dataset_rename/' + dataset_d_name + '/' + model_type + '/2d-labels-train.npy', final_gen_label)
     return final_gen_set, final_gen_label
 
 
@@ -123,14 +125,14 @@ def get_x_index_slices(x, y, protected_attribute_names=['sex'], protected_idx=8,
 #  TODO 需要更改选定敏感属性的逻辑 只需要对idx进行操作即可
 def get_sorted_rankers(ranker_origin_npy, x, y,  protected_attribute_names=['sex'], protected_idx=8,
                        favorable_label=1.0,unfavorable_label=0.0,condition_dict_priv=[{'sex': 1}],
-                                 condition_dict_unpriv=[{'sex': 0}], dateset_d_name='adult_race'):
+                                 condition_dict_unpriv=[{'sex': 0}], dateset_d_name='adult_race', model_type='dnn5'):
     print('>>>>>>>>>>>>>getting sorted ranker ...<<<<<<<<<<<<<<<<')
-    if os.path.exists('sorted_ranker/' + dateset_d_name + '/DP_up_fav_asc.npy'):
+    if os.path.exists('sorted_ranker/' + dateset_d_name +'/' + model_type + '/DP_up_fav_asc.npy'):
         print('>>>>>>>>>>>>>found cache reloading from npy ...<<<<<<<<<<<<<<<<<<')
-        DP_up_fav_asc = np.load('sorted_ranker/' + dateset_d_name + '/DP_up_fav_asc.npy').tolist()
-        FP_p_fav_asc = np.load('sorted_ranker/' + dateset_d_name + '/FP_p_fav_asc.npy').tolist()
-        DN_up_unfav_desc = np.load('sorted_ranker/' + dateset_d_name + '/DN_up_unfav_desc.npy').tolist()
-        FN_p_unfav_desc = np.load('sorted_ranker/' + dateset_d_name + '/FN_p_unfav_desc.npy').tolist()
+        DP_up_fav_asc = np.load('sorted_ranker/' + dateset_d_name +'/' + model_type + '/DP_up_fav_asc.npy').tolist()
+        FP_p_fav_asc = np.load('sorted_ranker/' + dateset_d_name +'/' + model_type + '/FP_p_fav_asc.npy').tolist()
+        DN_up_unfav_desc = np.load('sorted_ranker/' + dateset_d_name +'/' + model_type + '/DN_up_unfav_desc.npy').tolist()
+        FN_p_unfav_desc = np.load('sorted_ranker/' + dateset_d_name +'/' + model_type + '/FN_p_unfav_desc.npy').tolist()
         return DP_up_fav_asc, FP_p_fav_asc, DN_up_unfav_desc, FN_p_unfav_desc
     x_origin = np.load(x)
     y_origin = np.load(y)
@@ -183,12 +185,12 @@ def get_sorted_rankers(ranker_origin_npy, x, y,  protected_attribute_names=['sex
     DN_up_unfav_desc = sort_negative_descend(x_up_unfav, ranker_origin)
     FN_p_unfav_desc = sort_negative_descend(x_p_unfav, ranker_origin)
 
-    if not os.path.exists('sorted_ranker/' + dateset_d_name):
-        os.mkdir('sorted_ranker/' + dateset_d_name + '/')
-    np.save('sorted_ranker/' + dateset_d_name + '/DP_up_fav_asc.npy', np.array(DP_up_fav_asc))
-    np.save('sorted_ranker/' + dateset_d_name + '/FP_p_fav_asc.npy', np.array(FP_p_fav_asc))
-    np.save('sorted_ranker/' + dateset_d_name + '/DN_up_unfav_desc.npy', np.array(DN_up_unfav_desc))
-    np.save('sorted_ranker/' + dateset_d_name + '/FN_p_unfav_desc.npy', np.array(FN_p_unfav_desc))
+    if not os.path.exists('sorted_ranker/' + dateset_d_name + '/' + model_type + '/'):
+        os.mkdir('sorted_ranker/' + dateset_d_name + '/' + model_type + '/')
+    np.save('sorted_ranker/' + dateset_d_name +'/' + model_type + '/DP_up_fav_asc.npy', np.array(DP_up_fav_asc))
+    np.save('sorted_ranker/' + dateset_d_name +'/' + model_type + '/FP_p_fav_asc.npy', np.array(FP_p_fav_asc))
+    np.save('sorted_ranker/' + dateset_d_name +'/' + model_type + '/DN_up_unfav_desc.npy', np.array(DN_up_unfav_desc))
+    np.save('sorted_ranker/' + dateset_d_name +'/' + model_type + '/FN_p_unfav_desc.npy', np.array(FN_p_unfav_desc))
     return DP_up_fav_asc, FP_p_fav_asc, DN_up_unfav_desc, FN_p_unfav_desc
 
 

@@ -96,14 +96,15 @@ def para_print(attr, idx, x_path, y_path, condition_p, condition_up):
     print(condition_up)
 
 
-def get_all_reweighing_generated_sets():
+def get_all_reweighing_generated_sets(model_type='dnn5'):
     for i in range(len(dataset_with_d_attr_list)):
         dataset_d_name = dataset_with_d_attr_list[i]
         print('=================current dataset and protected_attr is %s==================' % dataset_d_name)
+        print('=================current model is %s==================' % model_type)
         s_time = time()
         protected_attr = dataset_d_attr_name_map[dataset_d_name]
         protected_attr_idx = d_attr_idx_map[dataset_d_name]
-        ranker_file_path = 'ranker_result_origin/' + dataset_d_name.split('_')[0] + '/2dims_result.npy'
+        ranker_file_path = 'ranker_result_origin/' + dataset_d_name.split('_')[0] + '/' + model_type + '/2dims_result.npy'
         x_path = '../data/npy_data_from_aif360/' + dataset_d_name.split('_')[0] + '-aif360preproc/features-train.npy'
         y_path = '../data/npy_data_from_aif360/' + dataset_d_name.split('_')[0] + '-aif360preproc/2d-labels-train.npy'
         cond_pri = fav_cond_map[dataset_d_name]
@@ -116,7 +117,8 @@ def get_all_reweighing_generated_sets():
                      favorable_label=1,
                      unfavorable_label=0,
                      condition_dict_priv=cond_pri,
-                     condition_dict_unpriv=cond_unpri)
+                     condition_dict_unpriv=cond_unpri,
+                     model_type=model_type)
         e_time = time()
         dura = e_time - s_time
         print('dataset %s took time : %f s' % (dataset_d_name, dura))
@@ -124,8 +126,11 @@ def get_all_reweighing_generated_sets():
 
 
 def work_flow_with_gen_ranker():
-    learn_all_rankers()
-    get_all_reweighing_generated_sets()
+    model_type_list = ['dnn1', 'dnn2', 'dnn3', 'dnn4', 'dnn5']
+    for i in range(len(model_type_list)):
+        print('current model is %s' % model_type_list[i])
+        learn_all_rankers(model_type=model_type_list[i])
+        get_all_reweighing_generated_sets(model_type=model_type_list[i])
     print('done with work flow within generating ranker files')
 
 

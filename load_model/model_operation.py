@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.python.platform import flags
 
 from utils.utils_tf import *
-import tutorial_models
+from load_model.tutorial_models import *
 
 FLAGS = flags.FLAGS
 
@@ -69,32 +69,48 @@ def get_data_path_list():
 def training(dataset, model_path, nb_epochs, batch_size,learning_rate,
              dataset_path='../data/npy_data_from_aif360/adult-aif360preproc/',
              input_shape=(None, 14),
-             nb_classes=2
+             nb_classes=2,
+             model_type='dnn5'
              ):
-    # prepare the data and model
-    X = np.load(dataset_path + "features-train.npy")
-    Y = np.load(dataset_path + "2d-labels-train.npy")
+    X = np.load(dataset_path + model_type + "/features-train.npy")
+    Y = np.load(dataset_path + model_type + "/2d-labels-train.npy")
     input_shape = input_shape
     nb_classes = nb_classes
-
     tf.set_random_seed(1234)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
-    # config = tf.ConfigProto()
-    # config.gpu_options.per_process_gpu_memory_fraction = 0.8
-    # sess = tf.Session(config=config)
     x = tf.placeholder(tf.float32, shape=input_shape)
     y = tf.placeholder(tf.float32, shape=(None, nb_classes))
-    model = tutorial_models.dnn(input_shape, nb_classes)
-    preds = model(x)
+    if model_type == 'dnn1':
+        model = dnn1(input_shape, nb_classes)
+        preds = model(x)
+    elif model_type == 'dnn3':
+        model = dnn3(input_shape, nb_classes)
+        preds = model(x)
+    elif model_type == 'dnn7':
+        model = dnn7(input_shape, nb_classes)
+        preds = model(x)
+    elif model_type == 'dnn9':
+        model = dnn9(input_shape, nb_classes)
+        preds = model(x)
+    elif model_type == 'dnn2':
+        model = dnn2(input_shape, nb_classes)
+        preds = model(x)
+    elif model_type == 'dnn4':
+        model = dnn4(input_shape, nb_classes)
+        preds = model(x)
+    else:
+        assert model_type == 'dnn5'
+        model = dnn5(input_shape, nb_classes)
+        preds = model(x)
 
     # training parameters
     train_params = {
         'nb_epochs': nb_epochs,
         'batch_size': batch_size,
         'learning_rate': learning_rate,
-        'train_dir': model_path + dataset + "/",
+        'train_dir': model_path + dataset + "/" + model_type + '/',
         'filename': 'test.model'
     }
 
@@ -127,16 +143,25 @@ def main(argv=None):
     #             input_shape= data_shape_list[i]
     #              )
     # print('%s\'s original models trained with dataset home from aif360 done.' % data_set_list[i])
-    for i in range(len(dataset_with_d_attr_list)):
-        training(dataset = dataset_with_d_attr_list[i],
-                model_path = FLAGS.model_path,
-                nb_epochs=FLAGS.nb_epochs,
-                batch_size=FLAGS.batch_size,
-                learning_rate=FLAGS.learning_rate,
-                dataset_path= data_path_with_d_list[i],
-                input_shape= data_with_d_shape_list[i]
-                 )
-    print('%s\'s reweighing models trained with dataset home from aif360 done.' % dataset_with_d_attr_list[i])
+    model_type_list = ['dnn1', 'dnn2', 'dnn3', 'dnn4', 'dnn5']
+    for j in range(len(model_type_list)):
+        model_type = model_type_list[j]
+        print('=======current model type is %s=======' % model_type)
+        for i in range(len(dataset_with_d_attr_list)):
+            print('>>>>>current dataset is %s id %d' % (dataset_with_d_attr_list[i], i+1))
+            training(dataset=dataset_with_d_attr_list[i],
+                     model_type=model_type,
+                     model_path=FLAGS.model_path,
+                     nb_epochs=FLAGS.nb_epochs,
+                     batch_size=FLAGS.batch_size,
+                     learning_rate=FLAGS.learning_rate,
+                     dataset_path=data_path_with_d_list[i],
+                     input_shape=data_with_d_shape_list[i]
+                     )
+            print('retrain model based on gen dataset %s done. ' % dataset_with_d_attr_list[i])
+    print('reweighing 11 models trained with gen datasets done, ready to run nc and sa.')
+
+
 if __name__ == '__main__':
     # flags.DEFINE_string("dataset", "adult", "the name of dataset")
     flags.DEFINE_string("model_path", "../model_reweighing/", "the name of path for saving model")
